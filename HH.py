@@ -6,7 +6,7 @@
 
 # From hhdefin.h
 LIB_VERSION = "3.0"
-MAXDEVNUM = 8
+MAXDEVNUM = 3
 MODE_HIST = 0
 MAXLENCODE = 6
 HHMAXINPCHAN = 8
@@ -62,7 +62,7 @@ def loadHHLibrary():
 
 def loadDevice():
     print("\nSearching for HydraHarp devices...")
-    print("Devidx     Status")
+    print("Dev_idx     Status")
 
     for i in range(0, MAXDEVNUM):
         retcode = hhlib.HH_OpenDevice(ct.c_int(i), hwSerial)
@@ -193,3 +193,11 @@ def setEverything(
 
     tryfunc(hhlib.HH_SetBinning(ct.c_int(dev[0]), ct.c_int(binning)), "SetBinning")
     tryfunc(hhlib.HH_SetOffset(ct.c_int(dev[0]), ct.c_int(offset)), "SetOffset")
+
+    print("Binning           : %d\n" % binning)
+    print("Offset            : %d\n" % offset)
+    print("SyncDivider       : %d\n" % syncDivider)
+    print("SyncCFDZeroCross  : %d\n" % syncCFDZeroCross)
+    print("SyncCFDLevel      : %d\n" % syncCFDLevel)
+    print("InputCFDZeroCross : %d\n" % inputCFDZeroCross)
+    print("InputCFDLevel     : %d\n" % inputCFDLevel)
