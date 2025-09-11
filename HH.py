@@ -118,19 +118,26 @@ def getInfo():
     return out
 
 
-def getSyncCountRates():
+def getRates():
+    """Returns rates of sync and all device's channels [counts/s]
+
+    Returns:
+        str: [counts/s]
+    """
+    out = ""
     # Note: after Init or SetSyncDiv you must allow >400 ms for valid  count rate readings
     # Otherwise you get new values after every 100ms
     time.sleep(0.4)
 
     tryfunc(hhlib.HH_GetSyncRate(ct.c_int(dev[0]), byref(syncRate)), "GetSyncRate")
-    print("Syncrate=%1d/s" % syncRate.value)
+    out += "Syncrate=" + str(syncRate.value) + "/s\n"
     for i in range(0, numChannels.value):
         tryfunc(
             hhlib.HH_GetCountRate(ct.c_int(dev[0]), ct.c_int(i), byref(countRate)),
             "GetCountRate",
         )
-        print("Countrate[%1d]=%1d/s" % (i, countRate.value))
+        out += "Countrate[" + str(i) + "]=" + str(countRate.value) + "/s\n"
+    return out
 
 
 def getWarnings():
