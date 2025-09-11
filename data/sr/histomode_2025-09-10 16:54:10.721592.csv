@@ -1,0 +1,46 @@
+HH library version is 3.0
+
+Searching for HydraHarp devices...
+Dev_idx     Status
+  0        S/N 1999999
+  1        no device
+  2        no device
+  3        no device
+  4        no device
+  5        no device
+  6        no device
+  7        no device
+Using device #0
+
+Initializing the device...
+Found Model HydraHarp 400 Part no 930020 Version 2.0
+Device has 4 input channels.
+
+Calibrating...
+Histogram length  : 65536
+Binning           : 0
+Offset            : 0
+SyncDivider       : 1
+SyncCFDZeroCross  : 0
+SyncCFDLevel      : 600
+InputCFDZeroCross : 0
+InputCFDLevel     : 600
+Resolution        : 1.0ps
+Syncrate=40000120/s
+Countrate[0]=0/s
+Countrate[1]=0/s
+Countrate[2]=0/s
+Countrate[3]=0/s
+
+
+WARNING_SYNC_RATE_TOO_HIGH: 
+The pulse rate at the sync input is too high. 
+If your sync source is periodic you can try 
+setting a larger sync divider. 
+
+
+WARNING_INPT_RATE_ZERO: 
+There is no signal at any of the input channels.  
+
+
+

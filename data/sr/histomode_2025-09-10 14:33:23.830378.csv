@@ -1,0 +1,8 @@
+Binning           : 0
+Offset            : 0
+AcquisitionTime   : 10000
+SyncDivider       : 1
+SyncCFDZeroCross  : 10
+SyncCFDLevel      : 600
+InputCFDZeroCross : 10
+InputCFDLevel     : 600
