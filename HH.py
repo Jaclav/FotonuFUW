@@ -1,7 +1,8 @@
+# Jaclav's wrapper for HydraHarp 400, makes life easier
+
+# Info of original demo from https://github.com/PicoQuant/HH400-v3.x-Demos
 # Demo for access to HydraHarp 400 Hardware via HHLIB.DLL v 3.0.
-# The program performs a measurement based on hard coded settings.
-# The resulting histogram (65536 channels) is stored in an ASCII output file.
-#
+# Authors of the original demo:
 # Keno Goertz, PicoQuant GmbH, February 2018
 
 # From hhdefin.h
@@ -60,7 +61,7 @@ def loadHHLibrary():
         print("Warning: The application was built for version %s" % LIB_VERSION)
 
 
-def loadDevice():
+def findAndConnect():
     print("\nSearching for HydraHarp devices...")
     print("Dev_idx     Status")
 
@@ -94,7 +95,7 @@ def loadDevice():
     )
 
 
-def getDeviceInfo():
+def getInfo():
     # Only for information
     tryfunc(
         hhlib.HH_GetHardwareInfo(dev[0], hwModel, hwPartno, hwVersion),
@@ -141,16 +142,35 @@ def getWarnings():
 
 
 def setEverything(
-    binning=0,  # you can change this
+    binning=0,
     offset=0,
-    syncDivider=1,  # you can change this
-    syncCFDZeroCross=10,  # you can change this (in mV)
-    syncCFDLevel=50,  # you can change this (in mV)
-    syncChannelOffset=-5000,  # you can change this (in ps, like a cable delay)
-    inputCFDZeroCross=10,  # you can change this (in mV)
-    inputCFDLevel=50,  # you can change this (in mV)
-    inputChannelOffset=0,  # you can change this (in ps, like a cable delay)
+    syncDivider=1,
+    syncCFDZeroCross=10,
+    syncCFDLevel=600,
+    syncChannelOffset=-5000,
+    inputCFDZeroCross=10,
+    inputCFDLevel=600,
+    inputChannelOffset=0,
 ):
+    """
+    Sets all necessary data to run measurement,
+    CFD stands for Constant Fraction Discriminator
+
+    Args:
+        binning (int, optional): measurement binning code minimum = 0 (smallest, i.e. base resolution). Defaults to 0.
+        offset (int, optional): global time offset [ps]. Defaults to 0.
+        syncDivider (int, optional): _description_. Defaults to 1.
+        syncCFDZeroCross (int, optional): sync input Constant Fraction Discriminato 0 mV line offset [mV]. Defaults to 10.
+        syncCFDLevel (int, optional): [mV]. Defaults to 50.
+        syncChannelOffset (int, optional): [ps]. Defaults to -5000.
+        inputCFDZeroCross (int, optional): [mV]. Defaults to 10.
+        inputCFDLevel (int, optional): [mV]. Defaults to 50.
+        inputChannelOffset (int, optional): [ps]. Defaults to 0.
+
+    Returns:
+        str: output message
+    """
+
     out = ""
     print("\nCalibrating...")
     tryfunc(hhlib.HH_Calibrate(ct.c_int(dev[0])), "Calibrate")
@@ -207,12 +227,20 @@ def setEverything(
     tryfunc(
         hhlib.HH_GetResolution(ct.c_int(dev[0]), byref(resolution)), "GetResolution"
     )
-    out += "Resolution        : %1.1lfps" % resolution.value + "\n"
+    out += "Resolution        : %1.1lf ps" % resolution.value + "\n"
     return out
 
 
-def measureAllInputs(tacq, outputfile=None):
-    # TODO: instead of saving to file, return an array
+def measureAllInputs(tacq):
+    """Measurement in histogram mode
+
+    Args:
+        tacq (int): acquisition time [ms]
+
+    Returns:
+        data (tuple): outputMessage, length of histogram, number of channels and 2d array of counts
+    """
+
     out = "AcquisitionTime   : " + str(tacq) + "\n"
     tryfunc(hhlib.HH_ClearHistMem(ct.c_int(dev[0])), "ClearHistMem")
 
@@ -239,10 +267,4 @@ def measureAllInputs(tacq, outputfile=None):
     if flags.value & FLAG_OVERFLOW > 0:
         out += "ERROR:  Overflow."
 
-    if outputfile != None:
-        for j in range(0, histLen.value):
-            for i in range(0, numChannels.value):
-                outputfile.write("%5d " % counts[i][j])
-            outputfile.write("\n")
-
-    return out
+    return (out, histLen.value, numChannels.value, counts)
