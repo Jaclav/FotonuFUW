@@ -6,7 +6,7 @@
 
 # From hhdefin.h
 LIB_VERSION = "3.0"
-MAXDEVNUM = 3
+MAXDEVNUM = 8
 MODE_HIST = 0
 MAXLENCODE = 6
 HHMAXINPCHAN = 8
@@ -100,20 +100,21 @@ def getDeviceInfo():
         hhlib.HH_GetHardwareInfo(dev[0], hwModel, hwPartno, hwVersion),
         "GetHardwareInfo",
     )
-    print(
-        "Found Model %s Part no %s Version %s"
-        % (
-            hwModel.value.decode("utf-8"),
-            hwPartno.value.decode("utf-8"),
-            hwVersion.value.decode("utf-8"),
-        )
+    out = (
+        "Found Model "
+        + hwModel.value.decode("utf-8")
+        + " Part no "
+        + hwPartno.value.decode("utf-8")
+        + " Version "
+        + hwVersion.value.decode("utf-8")
     )
 
     tryfunc(
         hhlib.HH_GetNumOfInputChannels(ct.c_int(dev[0]), byref(numChannels)),
         "GetNumOfInputChannels",
     )
-    print("Device has %i input channels." % numChannels.value)
+    out += "\nDevice has " + str(numChannels.value) + " input channels."
+    return out
 
 
 def getSyncCountRates():
@@ -136,20 +137,21 @@ def getWarnings():
     tryfunc(hhlib.HH_GetWarnings(ct.c_int(dev[0]), byref(warnings)), "GetWarnings")
     if warnings.value != 0:
         hhlib.HH_GetWarningsText(ct.c_int(dev[0]), warningstext, warnings)
-        print("\n\n%s" % warningstext.value.decode("utf-8"))
+        return warningstext.value.decode("utf-8")
 
 
 def setEverything(
-    binning = 0,  # you can change this
-    offset = 0,
-    syncDivider = 1,  # you can change this
-    syncCFDZeroCross = 10,  # you can change this (in mV)
-    syncCFDLevel = 50,  # you can change this (in mV)
-    syncChannelOffset = -5000,  # you can change this (in ps, like a cable delay)
-    inputCFDZeroCross = 10,  # you can change this (in mV)
-    inputCFDLevel = 50,  # you can change this (in mV)
-    inputChannelOffset = 0  # you can change this (in ps, like a cable delay)
+    binning=0,  # you can change this
+    offset=0,
+    syncDivider=1,  # you can change this
+    syncCFDZeroCross=10,  # you can change this (in mV)
+    syncCFDLevel=50,  # you can change this (in mV)
+    syncChannelOffset=-5000,  # you can change this (in ps, like a cable delay)
+    inputCFDZeroCross=10,  # you can change this (in mV)
+    inputCFDLevel=50,  # you can change this (in mV)
+    inputChannelOffset=0,  # you can change this (in ps, like a cable delay)
 ):
+    out = ""
     print("\nCalibrating...")
     tryfunc(hhlib.HH_Calibrate(ct.c_int(dev[0])), "Calibrate")
     tryfunc(hhlib.HH_SetSyncDiv(ct.c_int(dev[0]), ct.c_int(syncDivider)), "SetSyncDiv")
@@ -189,15 +191,58 @@ def setEverything(
         hhlib.HH_SetHistoLen(ct.c_int(dev[0]), ct.c_int(MAXLENCODE), byref(histLen)),
         "SetHistoLen",
     )
-    print("Histogram length is %d" % histLen.value)
+    out += "Histogram length  : " + str(histLen.value) + "\n"
 
     tryfunc(hhlib.HH_SetBinning(ct.c_int(dev[0]), ct.c_int(binning)), "SetBinning")
     tryfunc(hhlib.HH_SetOffset(ct.c_int(dev[0]), ct.c_int(offset)), "SetOffset")
 
-    print("Binning           : %d\n" % binning)
-    print("Offset            : %d\n" % offset)
-    print("SyncDivider       : %d\n" % syncDivider)
-    print("SyncCFDZeroCross  : %d\n" % syncCFDZeroCross)
-    print("SyncCFDLevel      : %d\n" % syncCFDLevel)
-    print("InputCFDZeroCross : %d\n" % inputCFDZeroCross)
-    print("InputCFDLevel     : %d\n" % inputCFDLevel)
+    out += "Binning           : " + str(binning) + "\n"
+    out += "Offset            : " + str(offset) + "\n"
+    out += "SyncDivider       : " + str(syncDivider) + "\n"
+    out += "SyncCFDZeroCross  : " + str(syncCFDZeroCross) + "\n"
+    out += "SyncCFDLevel      : " + str(syncCFDLevel) + "\n"
+    out += "InputCFDZeroCross : " + str(inputCFDZeroCross) + "\n"
+    out += "InputCFDLevel     : " + str(inputCFDLevel) + "\n"
+
+    tryfunc(
+        hhlib.HH_GetResolution(ct.c_int(dev[0]), byref(resolution)), "GetResolution"
+    )
+    out += "Resolution        : %1.1lfps" % resolution.value + "\n"
+    return out
+
+
+def measureAllInputs(tacq, outputfile=None):
+    # TODO: instead of saving to file, return an array
+    out = "AcquisitionTime   : " + str(tacq) + "\n"
+    tryfunc(hhlib.HH_ClearHistMem(ct.c_int(dev[0])), "ClearHistMem")
+
+    # measurement
+    tryfunc(hhlib.HH_StartMeas(ct.c_int(dev[0]), ct.c_int(tacq)), "StartMeas")
+    out += "Measuring for " + str(tacq) + " milliseconds...\n"
+    ctcstatus = ct.c_int(0)
+    while ctcstatus.value == 0:
+        tryfunc(hhlib.HH_CTCStatus(ct.c_int(dev[0]), byref(ctcstatus)), "CTCStatus")
+    tryfunc(hhlib.HH_StopMeas(ct.c_int(dev[0])), "StopMeas")
+
+    for i in range(0, numChannels.value):
+        tryfunc(
+            hhlib.HH_GetHistogram(
+                ct.c_int(dev[0]), byref(counts[i]), ct.c_int(i), ct.c_int(1)
+            ),
+            "GetHistogram",
+        )
+        integralCount = 0
+        for j in range(0, histLen.value):
+            integralCount += counts[i][j]
+        out += "  Integralcount[" + str(i) + "]=" + str(integralCount) + "\n"
+    tryfunc(hhlib.HH_GetFlags(ct.c_int(dev[0]), byref(flags)), "GetFlags")
+    if flags.value & FLAG_OVERFLOW > 0:
+        out += "ERROR:  Overflow."
+
+    if outputfile != None:
+        for j in range(0, histLen.value):
+            for i in range(0, numChannels.value):
+                outputfile.write("%5d " % counts[i][j])
+            outputfile.write("\n")
+
+    return out
