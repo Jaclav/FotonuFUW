@@ -13,10 +13,12 @@ MAXLENCODE = 6
 HHMAXINPCHAN = 8
 MAXHISTLEN = 65536
 FLAG_OVERFLOW = 0x001
+WRAPPER_VERSION = "1.0"
 
 import ctypes as ct
 from ctypes import byref
 import time
+from engineering_notation import EngNumber
 
 # Variables to store information read from DLLs
 counts = [(ct.c_uint * MAXHISTLEN)() for i in range(0, HHMAXINPCHAN)]
@@ -56,7 +58,11 @@ def tryfunc(retcode, funcName, measRunning=False):
 
 def loadHHLibrary():
     hhlib.HH_GetLibraryVersion(libVersion)
-    print("HH library version is %s" % libVersion.value.decode("utf-8"))
+    print(
+        "HH library version is %s" % libVersion.value.decode("utf-8"),
+        "Jaclav's wraper",
+        WRAPPER_VERSION,
+    )
     if libVersion.value.decode("utf-8") != LIB_VERSION:
         print("Warning: The application was built for version %s" % LIB_VERSION)
 
@@ -85,6 +91,7 @@ def findAndConnect():
     if len(dev) < 1:
         print("No device available.")
         closeDevices()
+        return None
     print("Using device #%1d" % dev[0])
     print("\nInitializing the device...")
 
@@ -130,13 +137,13 @@ def getRates():
     time.sleep(0.4)
 
     tryfunc(hhlib.HH_GetSyncRate(ct.c_int(dev[0]), byref(syncRate)), "GetSyncRate")
-    out += "Syncrate=" + str(syncRate.value) + "/s\n"
+    out += "SyncRate=" + str(EngNumber(syncRate.value, separator=" ")) + "Hz\n"
     for i in range(0, numChannels.value):
         tryfunc(
             hhlib.HH_GetCountRate(ct.c_int(dev[0]), ct.c_int(i), byref(countRate)),
             "GetCountRate",
         )
-        out += "Countrate[" + str(i) + "]=" + str(countRate.value) + "/s\n"
+        out += "ChRate[" + str(i + 1) + "]=" + str(countRate.value) + "/s\n"
     return out
 
 
@@ -231,11 +238,18 @@ def setEverything(
     out += "InputCFDZeroCross : " + str(inputCFDZeroCross) + "\n"
     out += "InputCFDLevel     : " + str(inputCFDLevel) + "\n"
 
+    return out
+
+def getResolution():
+    """Returns time between steps in histogram
+
+    Returns:
+        int: step in ps
+    """
     tryfunc(
         hhlib.HH_GetResolution(ct.c_int(dev[0]), byref(resolution)), "GetResolution"
     )
-    out += "Resolution        : %1.1lf ps" % resolution.value + "\n"
-    return out
+    return resolution.value
 
 
 def measureAllInputs(tacq):
