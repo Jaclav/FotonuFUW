@@ -249,7 +249,7 @@ def getResolution():
     tryfunc(
         hhlib.HH_GetResolution(ct.c_int(dev[0]), byref(resolution)), "GetResolution"
     )
-    return resolution.value
+    return int(resolution.value)
 
 
 def measureAllInputs(tacq):
