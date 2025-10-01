@@ -1,3 +1,5 @@
 *.out
-__pycache__/*
+__pycache__/
 trashData/
+.vscode/
+.ipynb_checkpoints

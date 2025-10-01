@@ -100,6 +100,7 @@ def findAndConnect():
         hhlib.HH_Initialize(ct.c_int(dev[0]), ct.c_int(MODE_HIST), ct.c_int(0)),
         "Initialize",
     )
+    print("Initialization complete.")
 
 
 def getInfo():
