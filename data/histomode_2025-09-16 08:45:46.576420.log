@@ -1,0 +1,32 @@
+Found Model HydraHarp 400 Part no 930020 Version 2.0
+Device has 4 input channels.
+Histogram length  : 65536
+Binning           : 5
+Offset            : 0
+SyncDivider       : 1
+SyncCFDZeroCross  : 10
+SyncCFDLevel      : 610
+InputCFDZeroCross : 10
+InputCFDLevel     : 610
+Resolution        : 32
+Offset ch1        : 330
+Offset ch4        : 359
+SyncRate=90.44 kHz
+ChRate[1]=0/s
+ChRate[2]=0/s
+ChRate[3]=0/s
+ChRate[4]=192560/s
+
+WARNING_INPT_RATE_RATIO: 
+The pulse rate ratio R(ch)/R(sync) is over 5% 
+for at least one input channel. 
+This may cause pile-up and deadtime artefacts.  
+
+
+WARNING_TIME_SPAN_TOO_SMALL: 
+The sync period is longer than the measurable time 
+span at the current resolution. Events falling outside 
+this span will not be recorded.  
+
+
+

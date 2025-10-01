@@ -1,0 +1,26 @@
+Found Model HydraHarp 400 Part no 930020 Version 2.0
+Device has 4 input channels.
+Histogram length  : 65536
+Binning           : 5
+Offset            : 0
+SyncDivider       : 1
+SyncCFDZeroCross  : 10
+SyncCFDLevel      : 610
+InputCFDZeroCross : 10
+InputCFDLevel     : 610
+Resolution        : 32
+Offset ch1        : 330
+Offset ch4        : 359
+SyncRate=40 MHz
+ChRate[1]=0/s
+ChRate[2]=0/s
+ChRate[3]=191240/s
+ChRate[4]=192520/s
+
+WARNING_SYNC_RATE_TOO_HIGH: 
+The pulse rate at the sync input is too high. 
+If your sync source is periodic you can try 
+setting a larger sync divider. 
+
+
+
