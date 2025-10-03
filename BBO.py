@@ -1,7 +1,10 @@
 import numpy as np
 from typing import Literal
 
-def no(l: float, model: Literal["Kato", "Eimerl", "Zhang", "Tamosaukas"] = "Eimerl"):
+Models = Literal["Kato", "Eimerl", "Zhang", "Tamosaukas"]
+
+
+def no(l: float, model: Models = "Eimerl"):
     # From https://refractiveindex.info/?shelf=main&book=BaB2O4&page=Eimerl-o
     if model == "Eimerl" and 0.22 <= l <= 1.06:
         return np.sqrt(2.7405 + (0.0184) / (l**2 - 0.0179) - 0.0155 * l**2)
@@ -33,7 +36,7 @@ def no(l: float, model: Literal["Kato", "Eimerl", "Zhang", "Tamosaukas"] = "Eime
         raise ValueError
 
 
-def ne(l, model: Literal["Kato", "Eimerl", "Zhang", "Tamosaukas"] = "Eimerl"):
+def ne(l, model: Models = "Eimerl"):
     # From https://refractiveindex.info/?shelf=main&book=BaB2O4&page=Eimerl-e
     if model == "Eimerl" and 0.22 <= l <= 1.06:
         return np.sqrt(2.3730 + (0.0128) / (l**2 - 0.0156) - 0.0044 * l**2)
@@ -65,7 +68,8 @@ def ne(l, model: Literal["Kato", "Eimerl", "Zhang", "Tamosaukas"] = "Eimerl"):
         raise ValueError
 
 
-def neff(length, angle):
-    return (
-        np.cos(angle) ** 2 / no(length) ** 2 + np.sin(angle) ** 2 / ne(length) ** 2
-    ) ** -0.5
+def neeff(length, angle, model: Models = "Eimerl"):
+    return 1 / np.sqrt(
+        np.cos(angle) ** 2 / no(length, model) ** 2
+        + np.sin(angle) ** 2 / ne(length, model) ** 2
+    )
