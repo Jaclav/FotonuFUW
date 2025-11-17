@@ -5,6 +5,15 @@ Models = Literal["Kato", "Eimerl", "Zhang", "Tamosaukas"]
 
 
 def no(l: float, model: Models = "Eimerl"):
+    """Get ordinary refractive index of BBO
+
+    Args:
+        l (float): wavelength in um
+        model (Models, optional): dispertion model. Defaults to "Eimerl".
+
+    Returns:
+        float: no
+    """
     # From https://refractiveindex.info/?shelf=main&book=BaB2O4&page=Eimerl-o
     if model == "Eimerl" and 0.22 <= l <= 1.06:
         return np.sqrt(2.7405 + (0.0184) / (l**2 - 0.0179) - 0.0155 * l**2)
@@ -69,7 +78,7 @@ def ne(l, model: Models = "Eimerl"):
 
 
 def neeff(length, angle, model: Models = "Eimerl"):
-    return 1 / np.sqrt(
+    return (
         np.cos(angle) ** 2 / no(length, model) ** 2
         + np.sin(angle) ** 2 / ne(length, model) ** 2
-    )
+    ) ** -0.5
