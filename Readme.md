@@ -1,3 +1,7 @@
-# Example code made during internship in optical division of FUW
+# Example code made during internship in optical division of FUW (old)
 
-HH - interface for PicoQuant hydra harp
+HH.py - interface for PicoQuant hydra harp
+HH.ipynb - data acquisition
+dataAnalysis - analysis of an experimental data
+BBO.py - BBO data
+N_problem - analysis of refraction index
